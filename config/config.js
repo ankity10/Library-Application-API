@@ -1,4 +1,5 @@
+var mongodb_url = process.env.OPENSHIFT_MONGODB_DB_URL || 'mongodb://localhost:27017/';
 module.exports = {
 	secret:"thisismysecretkey",
-	db:process.env.OPENSHIFT_MONGODB_DB_URL+"nodejs"
+	db:mongodb_url+"nodejs"
 }
