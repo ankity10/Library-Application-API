@@ -1,4 +1,4 @@
-
+const env          = process.env;
 var express = require('express');
 
 // Express app instance
@@ -15,7 +15,7 @@ app.use(bodyParser.json());
 // Passport instance for Json web token login strategy.
 var passport = require('passport');
 
-var port =  8080;
+// var port =  8080;
 
 // rootRouter for root express app
 var rootRouter = express.Router();
@@ -60,6 +60,7 @@ var apiRouter = require('./api');
 // Registering API Router
 app.use('/api',apiRouter);
 
-// Start listening on port 8080
-app.listen(port);
-console.log('Listening on port '+ port);
+// Start listening on port 3000
+app.listen(env.NODE_PORT || 3000, env.NODE_IP || 'localhost', function () {
+  console.log(`Application worker ${process.pid} started...`);
+});;
