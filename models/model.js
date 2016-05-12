@@ -31,6 +31,21 @@ var validateUniqueEmail = function(value, callback) {
   });
 };
 
+var validateUniqueUsername = function(value, callback) {
+  var User = mongoose.model('User');
+  User.find({
+    $and: [{
+      username: value
+    },
+    {
+      _id: {
+          $ne: this._id
+      }
+    }]
+  }, function(err, user){
+    callback(err || user.length === 0);
+  });
+};
 /**
  * Getter
  */
@@ -42,29 +57,37 @@ var escapeProperty = function(value) {
  * User Schema
  */
 
+
+
 var UserSchema = new Schema({
   name: {
     type: String,
     required: true,
-    get: escapeProperty
+    get: escapeProperty,
+    maxlength: [80, "Name should be less 80 characters"]
   },
   email: {
     type: String,
     required: true,
     unique: true,
-    // Regexp to validate emails with more strict rules as added in tests/users.js which also conforms mostly with RFC2822 guide lines
+    // Regexp to validate emails with more strict rules 
     match: [/^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/, 'Please enter a valid email'],
-    validate: [validateUniqueEmail, 'E-mail address is already in-use']
+    validate: [validateUniqueEmail, 'E-mail address is already in-use'],
+    maxlength: [80, "Email should be less 80 characters"]
   },
   username: {
     type: String,
     unique: true,
     required: true,
-    get: escapeProperty
+    get: escapeProperty,
+    validate: [validateUniqueUsername, 'Username is already in-use'],
+    maxlength: [50, "Username should be less 50 characters"],
+    match: [/^[a-zA-Z0-9_]*$/, "Please enter a valid username, use only alphabet or numeric or underscore. No special charecters are allowed."]
   },
-  roles: {
-    type: Array,
-    default: ['authenticated', 'anonymous']
+  role: {
+    type: String,
+    enum: ['publisher','reader','admin'],
+    maxlength: [20, "Roles should be less then 20 characters"]
   },
   hashed_password: {
     type: String,
@@ -74,6 +97,20 @@ var UserSchema = new Schema({
     type: String,
     default: 'local'
   },
+  mobile: {
+    type: String,
+    match: [/^\d{10}$/,"Please enter a valid mobile number"]
+  },
+  country: {
+    type: String,
+    maxlength: [30, "Country should be less then 30 characters"]
+  },
+  verified: {
+    type: Boolean,
+    default: false
+  },
+  verificationToken: String,
+  verificationTokenExpires: Date,
   salt: String,
   resetPasswordToken: String,
   resetPasswordExpires: Date,
@@ -174,6 +211,10 @@ UserSchema.methods.toJSON = function() {
   var obj = this.toObject();
   delete obj.hashed_password;
   delete obj.salt;
+  delete obj.verificationToken;
+  delete obj.verificationTokenExpires;
+  delete obj.resetPasswordExpires;
+  delete obj.resetPasswordToken;
   return obj;
 };
 
