@@ -1,4 +1,4 @@
 module.exports = {
 	secret:"thisismysecretkey",
-	db:"localhost:27017/mean"
+	db:"mongodb://admin:IvigKnUiPZXy@$OPENSHIFT_MONGODB_DB_HOST:$OPENSHIFT_MONGODB_DB_PORT"
 }
