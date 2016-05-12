@@ -1,4 +1,4 @@
 module.exports = {
 	secret:"thisismysecretkey",
-	db:"mongodb://admin:IvigKnUiPZXy@localhost:27017/nodejs"
+	db:process.env.OPENSHIFT_MONGODB_DB_URL+"nodejs"
 }
