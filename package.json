@@ -21,7 +21,6 @@
     "forever": "latest",
     "gridfs-stream": "latest",
     "jsonwebtoken": "latest",
-    "kerberos": "latest",
     "lodash": "latest",
     "mailgun": "^0.5.0",
     "mailgun-js": "^0.7.10",

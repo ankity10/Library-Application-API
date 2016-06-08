@@ -54,7 +54,7 @@ var emailToken = function(email, username, token, route, callback){
             content: {
               from: config.emailFrom,
               subject: 'Testing!',
-              html:'<html><body><p>Hey Siteflu your verification token is <a href="http://localhost:8080/api'+route+'/?token='+token+'&username='+username+'">Click this link to verify</a> </p></body></html>'
+              html:'<html><body><p>Hey Siteflu your verification token is <a href="' + config.app_url + ':' + config.app_port + '/api' + route+  '/?token='+token+'&username='+username+'" >Click this link to verify</a> </p></body></html>'
             },
             recipients: [
               {address: 'siteflu@gmail.com'}
