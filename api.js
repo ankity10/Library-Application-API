@@ -356,3 +356,33 @@ apiRouter.route('/resetpassword')
         });
 
     });
+
+
+
+apiRouter.put('/edit_profile', function (req, res) {
+
+        User.findOne({
+        username:aaaa
+        },function(err,user){
+                // if there is any error
+                if(err){
+                    res.json({
+                        success: false,
+                        message: "Error occur"
+                    });
+                }
+                if(!user){
+                    res.json({
+                        success: false,
+                        message: "Username not found! User not Exists."
+                    });
+                }
+                else{
+                    res.json({
+                   success: true,
+                   message: "User Profile Successfully updated"
+                });
+                }
+        });
+        
+});
