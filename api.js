@@ -187,116 +187,6 @@ apiRouter.get('/dash', passport.authenticate('jwt', { session: false }), functio
   res.send('It worked! User id is: ' + req.user._id + '.');
 });
 
-
-
-
-apiRouter.put('/user/id/edit', passport.authenticate('jwt', { session: false }), function(req, res) {
-
-        User.findOne({_id:req.user._id},function(err,user){               // if there is any error
-                if(err){
-                    res.json({
-                        success: false,
-                        message: "Error occur"
-                    });
-                }
-                if(!user){
-                    res.json({
-                        success: false,
-                        message: "Username not found! User not Exists or Authentication failed."
-                    });
-                }
-                else{
-                        // console.log(req.body.username.length);
-                        //User find successful and updating the updated fields
-                        if(req.body.username.length)
-                        {
-
-                            // console.log("Inside if");
-                            User.findOne({username:req.body.username},function(err,user){
-                                if(err){
-                                    res.json({
-                                        success: false,
-                                        message: "Error occur"
-                                    });
-                                    return;
-                                }
-                                if(user){
-                                    res.json({
-                                        success: false,
-                                        message: "Username already exists"
-                                    });
-                                    return;
-                                }
-                                else{
-
-                                    //if Updating Username
-                                    User.update({_id:req.user._id},
-                                        {
-                                            $set: { username: req.body.username}
-                                        }, function(err, results) {
-
-                                                if(err)
-                                                {
-                                                    res.json({
-                                                        success: false,
-                                                        message: "Error in Updating username"
-                                                    });
-                                                    return;
-                                                }
-
-                                                if(results)
-                                                {
-                                                    console.log("inside last else");
-                                                    res.json({
-                                                        success: true,
-                                                        message: "Updating username Successful"
-                                                    });
-                                                    return;
-                                                }
-                                                else
-                                                {
-                                                    res.json({
-                                                        success: false,
-                                                        message: "Username not update"
-                                                    });
-                                                    return;
-                                                }
-
-                                                // res.json({
-                                                //         success: false,
-                                                //         message: "Username not update"
-                                                //     });
-                                                //     return;
-                                        
-                                       });
-                                    }
-                                    // res.json({
-                                    //     success: true,
-                                    //     message: "Username successfully updated!"
-                                    // });
-                                    // return;
-                            });
-                        }
-                        
-                        // res.json({
-                        //        success: true,
-                        //        message: "User Found"
-                        //        // test: req.body.username.length
-
-                        //        // mobile: req.body.mobile,
-                        //        // username: req.body.username,
-                        //        // name: req.body.name
-                        //      });
-                        //     return;
-
-
-                }
-        });
-    });    
-
-
-
-
 /**
  * [Unprotected verification route, used for email verification]
  * @param  {[request object]} req                    [By default provided by express application]
@@ -466,5 +356,143 @@ apiRouter.route('/resetpassword')
 
     });
 
+//Update username only
+apiRouter.put('/user/id/edit/username', passport.authenticate('jwt', { session: false }), function(req, res) {
+
+        User.findOne({_id:req.user._id},function(err,user){               // if there is any error
+                if(err){
+                    res.json({
+                        success: false,
+                        message: "Error occur"
+                    });
+                }
+                if(!user){
+                    res.json({
+                        success: false,
+                        message: "Username not found! User not Exists or Authentication failed."
+                    });
+                }
+                else{
+                        // console.log(req.body.username.length);
+                        //User find successful and updating the updated fields
+                        if(req.body.username.length)
+                        {
+
+                            // console.log("Inside if");
+                            User.findOne({username:req.body.username},function(err,user){
+                                if(err){
+                                    res.json({
+                                        success: false,
+                                        message: "Error occur"
+                                    });
+                                    return;
+                                }
+                                if(user){
+                                    res.json({
+                                        success: false,
+                                        message: "Username already exists"
+                                    });
+                                    return;
+                                }
+                                else{
+
+                                    //if Updating Username
+                                    User.update({_id:req.user._id},
+                                        {
+                                            $set: { username: req.body.username}
+                                        }, function(err, results) {
+
+                                                if(err)
+                                                {
+                                                    res.json({
+                                                        success: false,
+                                                        message: "Error in Updating username"
+                                                    });
+                                                    return;
+                                                }
+
+                                                if(results)
+                                                {
+                                                    console.log("inside last else");
+                                                    res.json({
+                                                        success: true,
+                                                        message: "Updating username Successful"
+                                                    });
+                                                    return;
+                                                }
+                                                else
+                                                {
+                                                    res.json({
+                                                        success: false,
+                                                        message: "Username not update"
+                                                    });
+                                                    return;
+                                                }
+                                       });
+                                    }
+                                   
+                            });
+                        }
+                }
+        });
+    });    
+
+apiRouter.put('/user/id/edit',passport.authenticate('jwt',{session : false}), function(req,res){
+
+    User.findOne({_id:req.user._id},function(err,user){               // if there is any error
+                        if(err){
+                            res.json({
+                                success: false,
+                                message: "Error occur"
+                            });
+                        }
+                        if(!user){
+                            res.json({
+                                success: false,
+                                message: "Username not found! User not Exists or Authentication failed."
+                            });
+                        }
+                        else{
+                                User.update({_id:req.user._id},
+                                        {
+                                            $set:   { 
+                                                        name: req.body.name,
+                                                        mobile: req.body.mobile,
+                                                        country: req.body.country
+                                                    }
+
+                                        }, function(err, results) {
+
+                                                if(err)
+                                                {
+                                                    res.json({
+                                                        success: false,
+                                                        message: "Error in Updating"
+                                                    });
+                                                    return;
+                                                }
+
+                                                if(results)
+                                                {
+                                                    res.json({
+                                                        success: true,
+                                                        message: "Updating Successful"
+                                                    });
+                                                    return;
+                                                }
+                                                else
+                                                {
+                                                    res.json({
+                                                        success: false,
+                                                        message: "Profile not updated"
+                                                    });
+                                                    return;
+                                                }
+
+                                        });
+                            }
+
+                });
+});
 
 
