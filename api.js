@@ -138,8 +138,9 @@ apiRouter.post("/login",function( req, res ){
             {
                 // if user is verified
                 if(user.verified){
-                    var jwtuser = user.toJSON();
-                    var token = jwt.sign(jwtuser, config.secret,{
+                    var jwtuser = user._id;
+                    console.log("user id : "+jwtuser);
+                    var token = jwt.sign(jwtuser, config.secret, {
                     expiresIn: 100080 // one week
                     });
                     res.json({

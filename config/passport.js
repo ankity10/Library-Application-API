@@ -21,7 +21,7 @@ module.exports = function(passport) {
 	// Configuring passport to use JwtStrategy
 	passport.use(new JwtStrategy(opts, function(jwt_payload, callback){
 		// finding one user whose id is equal to id inside the token
-		User.findOne({id:jwt_payload.id},function(err,user){
+		User.findOne({id:jwt_payload.sub},function(err,user){
 			// if there is any error
 			if(err)
 			{
