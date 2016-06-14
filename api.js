@@ -357,6 +357,54 @@ apiRouter.route('/resetpassword')
 
     });
 
+
+
+//Checks for username available or not while signup
+apiRouter.post('/usercheck',function(req,res){
+
+    if(req.body.username){
+    User.findOne({
+                    $or: [{
+                            email: req.body.username
+                        }, {
+                            username: req.body.username
+                        }]},function(err,user){
+                    // if there is any error
+                    if(err){
+                        res.json({
+                            success: false,
+                            message: "Error while finding username!!"
+                        });
+                    }
+                    // if no user found with that token
+                    if(user){
+                        res.json({
+                            success: false,
+                            message: "Username Already exists!!"
+                        });
+                    }
+                    // if user found then set verified and reset the token
+                    else
+                    {
+                            res.json({
+                                success: true,
+                                message: "Username is available"
+                            });
+
+                    }
+
+         });
+}
+else
+{
+    res.json({
+            success : false,
+            message : "Field is empty!"
+    });
+}
+});
+
+
 //Update username only
 apiRouter.put('/user/id/edit/username', passport.authenticate('jwt', { session: false }), function(req, res) {
 
