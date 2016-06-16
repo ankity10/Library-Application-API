@@ -9,10 +9,12 @@ var allowCrossDomain = function(req, res, next) {
     res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE');
     res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
 
+
+
     next();
 }
 
-app.use(allowCrossDomain);
+    app.use(allowCrossDomain);
 
 
 // Morgan instance to log each request on terminal
@@ -49,7 +51,6 @@ require('./config/passport')(passport);
  */
 rootRouter.use(function(req, res, next){
 	console.log('Request came');
-	// console.log(req.user);
 	next(); // move to other routes
 });
 
@@ -75,4 +76,4 @@ app.use('/api',apiRouter);
 // Start listening on port 3000
 app.listen(env.NODE_PORT || 3000, env.NODE_IP || 'localhost', function () {
   console.log(`Application worker ${process.pid} started...`);
-});;
+});
