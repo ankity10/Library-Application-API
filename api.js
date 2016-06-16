@@ -44,6 +44,7 @@ var sp = new SparkPost(config.sparkpost_api_key);
 // async task
 var async = require('async');
 
+
 /**
  * @param  {String}
  * @return {[type]}
@@ -185,7 +186,10 @@ apiRouter.get("/test",function(req, res){
 
 // Protect dash route with JWT
 apiRouter.get('/dash', passport.authenticate('jwt', { session: false }), function(req, res) {
-  res.send('It worked! User id is: ' + req.user._id + '.');
+    // res.render('/index.html');
+  console.log('It worked! User id is: ' + req.user + '.');
+  res.send("hi!");
+  
 });
 
 /**
@@ -486,6 +490,10 @@ apiRouter.put('/user/id/edit/username', passport.authenticate('jwt', { session: 
         });
     });    
 
+
+
+
+//route to edit/update profile details
 apiRouter.put('/user/id/edit',passport.authenticate('jwt',{session : false}), function(req,res){
 
     User.findOne({_id:req.user._id},function(err,user){               // if there is any error
@@ -545,3 +553,28 @@ apiRouter.put('/user/id/edit',passport.authenticate('jwt',{session : false}), fu
 });
 
 
+      // Setting the google oauth routes
+apiRouter.route('/auth/google')
+        .get(passport.authenticate('google', {
+          failureRedirect: "/",
+          scope: [
+            'https://www.googleapis.com/auth/userinfo.profile',
+            'https://www.googleapis.com/auth/userinfo.email'
+          ]
+        }), function(req, res) {
+          if (req.isAuthenticated()) {
+            return res.redirect('/');
+          }
+          res.redirect('/test');
+        });
+
+      apiRouter.route('/api/auth/google/callback')
+        .get(passport.authenticate('google', {
+          failureRedirect: "/"
+        }), function(req, res) {
+          if (req.isAuthenticated()) {
+            return res.redirect('/');
+          }
+          res.redirect('/test');
+        });
+  
