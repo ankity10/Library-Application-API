@@ -664,17 +664,17 @@ apiRouter.get('/users/me',passport.authenticate('jwt', {session: false}), functi
 //  * @return {[json]}                                  [Returns a json object]
 //  */
 // apiRouter.post("/register",function(req, res){
-// 	var user = new User(req.body);
-// 	user.provider = 'local';                           // user is registered by our signup form
+//  var user = new User(req.body);
+//  user.provider = 'local';                           // user is registered by our signup form
 //     user.verificationToken = base64url(crypto.randomBytes(200));
 //     user.verificationTokenExpires = Date.now() + 259200000 // 3 Days         
 //     user.save(function(err, user)
 //     {
 //         // some error in saving the user then return
-//       	if(err){
-//       		res.send(err);
+//          if(err){
+//              res.send(err);
 //                   return;
-//       	}
+//          }
 
 //         // sending verification email
 //         emailToken(user.email, user.username, user.verificationToken, "/userverify", function(err){
@@ -684,10 +684,10 @@ apiRouter.get('/users/me',passport.authenticate('jwt', {session: false}), functi
 //         });
 
 //         // if no error then return json object with success message
-//       	res.json({
-//       		"success" : true,
-//       		"message" : "User created successfully. Great job!"
-//       	});
+//          res.json({
+//              "success" : true,
+//              "message" : "User created successfully. Great job!"
+//          });
 //     });
 // });
 
@@ -1161,4 +1161,4 @@ apiRouter.get('/users/me',passport.authenticate('jwt', {session: false}), functi
 //           }
 //           res.redirect('/test');
 //         });
-//   
+//  
