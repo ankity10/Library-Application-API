@@ -4,17 +4,17 @@
 
 		"_id" 				:	"object(b823d77af...)",
 		"name"				:	"some-name",
-		"categories" 			:	["Electronics", "Computer", "Comic"],
+		"categories" 		:	["Electronics", "Computer", "Comic"],
 		"first-publish-date" 	:	"01-02-2016",
 		"publish-duration" 	:	"30 days",
 		"publish-start-date" 	:	"5-05-2016",
-		"publish-end-date "	:	" 5-06-2016",
-		"pages" 				:	"167",
-		"cover-img "			:	"path-of-cover-image-of-book.jpg",
+		"publish-end-date "	:	"5-06-2016",
+		"pages" 			:	"167",
+		"cover-img "		:	"path-of-cover-image-of-book.jpg",
 		"pdf-path" 			:	"/pdf/xyz.pdf",
-		"views "				:	"30",
+		"views "			:	"30",
 		"response" 			:	"14",
-		"response-ratio"		:	"0.46",
+		"response-ratio"	:	"0.46",
 		"slug"				:	"some-url-with-dashes",
 		"publisher_id"		:	"_id of publisher"
 	},
@@ -24,8 +24,8 @@
 		"_id" 				:	"object(a4bdfe752....)",
 		"username"			:	"ankitwrk or something else.",
 		"name" 				:	"Ankit Yadav",
-		"email" 				:	"ankitwrk@gmail.com",
-		"Mobile" 				:	"8087850104",
+		"email" 			:	"ankitwrk@gmail.com",
+		"Mobile" 			:	"8087850104",
 		"Password"			:	"ff328f3c4b162768c86433a09e7329ee0f2f10fa",
 		"profile-img "		:	"path-of-profile-image.jpg",
 		"verified" 			:	"0 or 1",
@@ -57,12 +57,12 @@
 		"half-read-books"		:	[
 									{
 										"object_id_of_book1"		:	"object(a234b87df23e...)",
-										"last_page"				:	"123",
+										"last_page"				:	"123"
 
 									},
 									{
 										"object_id_of_book2"		:	"object(23b87a7f...)",
-										"last_page"				:	"67",
+										"last_page"				:	"67"
 									}
 								]
 	}

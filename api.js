@@ -32,6 +32,9 @@ require('./config/passport')(passport);
 // User model to manipulate data in mongodb
 var User = require('./models/model');
 
+// User model to manipulate data in mongodb
+var Book = require('./models/books_model');
+
 // crypto module to generate verification token
 var crypto = require('crypto');
 // base64url module to convert base64 to base64 url friendly token
@@ -144,6 +147,7 @@ apiRouter.post("/login",function( req, res ){
                 success:false,
                 message: "Authentication failed. User not found. "
             });
+            console.log(datetime);
 
         }
         // if a user found with that username
@@ -370,7 +374,6 @@ apiRouter.post('/usercheck',function(req,res){
 
 
 
-//========================== protected routes starts ==================================
 
  
 // ===== protection middleware starts ========
@@ -435,6 +438,11 @@ apiRouter.post('/usercheck',function(req,res){
 // });
 // ===== user verification middleware ends ======
 
+
+
+
+
+//========================== protected routes starts ==================================
 
 // Protect dash route with JWT
 apiRouter.get('/dash', passport.authenticate('jwt', { session: false }), function(req, res) {
@@ -640,6 +648,20 @@ apiRouter.put('/user/id/edit',passport.authenticate('jwt',{session : false}), fu
 apiRouter.get('/users/me',passport.authenticate('jwt', {session: false}), function(req, res){
 
 });
+
+
+// only publisher route to publish the book
+
+apiRouter.post('/user/publish',passport.authenticate('jwt', {session: false}), function (req, res) {
+
+
+    // console.log(req.user);
+    res.json({
+        'username' : req.user._id
+    })
+});
+
+
 
 //========================== protected routes ends ==================================
 
