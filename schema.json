@@ -57,12 +57,12 @@
 		"half-read-books"		:	[
 									{
 										"object_id_of_book1"		:	"object(a234b87df23e...)",
-										"last_page"				:	"123",
+										"last_page"				:	"123"
 
 									},
 									{
 										"object_id_of_book2"		:	"object(23b87a7f...)",
-										"last_page"				:	"67",
+										"last_page"				:	"67"
 									}
 								]
 	}
