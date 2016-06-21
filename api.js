@@ -1183,4 +1183,15 @@ apiRouter.post('/user/publish',passport.authenticate('jwt', {session: false}), f
 //           }
 //           res.redirect('/test');
 //         });
-//  
+//
+
+
+// ======================= books routes start =============
+
+apiRouter.route('books')
+
+    .get()
+
+// ======================= books routes ends ==============
+
+
