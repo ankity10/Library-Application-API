@@ -16,7 +16,7 @@
 		"response" 			:	"14",
 		"response-ratio"	:	"0.46",
 		"slug"				:	"some-url-with-dashes",
-		"publisher_id"		:	"_id of publisher"
+		"publisher"		:	"_id of publisher"
 	},
 
 	"user" : {

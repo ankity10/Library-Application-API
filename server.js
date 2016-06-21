@@ -74,6 +74,6 @@ var apiRouter = require('./api');
 app.use('/api',apiRouter);
 
 // Start listening on port 3000
-app.listen(env.NODE_PORT || 3000, env.NODE_IP || 'localhost', function () {
+app.listen(env.NODE_PORT || 3001, env.NODE_IP || 'localhost', function () {
   console.log(`Application worker ${process.pid} started...`);
 });

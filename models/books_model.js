@@ -61,9 +61,10 @@ var BookSchema = new Schema({
         type : Number,
         default : 30            //in days
     },
-    publisher_id :{
-        type: Number,
-        maxlength : [24,'Invaild publisher id']
+    publisher :{
+        type: Schema.ObjectId,
+        ref:'User',
+        required: true
     },
 
     first_published_date : Date,
