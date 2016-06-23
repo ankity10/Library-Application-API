@@ -5,7 +5,7 @@ var JwtStrategy = require('passport-jwt').Strategy;
 var ExtractJwt = require('passport-jwt').ExtractJwt;
 
 // User model to manipulate data in mongodb
-var User = require('../models/model');
+var User = require('../models/user_model');
 
 // Creating instance of config module
 var config = require('./config');

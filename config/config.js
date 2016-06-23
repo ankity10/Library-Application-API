@@ -16,7 +16,7 @@ if(process.env.NODE_PORT)
 else
 {
 	app_env = "localhost"
-	app_port = 3001
+	app_port = 3000
 	app_url = "http://localhost"
 	app_ip = "localhost"
 }

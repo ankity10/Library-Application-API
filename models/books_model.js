@@ -41,13 +41,14 @@ var BookSchema = new Schema({
        maxlength : [100, "Name should be less 100 characters"]
    }, 
     categories : {
-        type : String,
-        default : 'test',
+        type : [Schema.ObjectId],
+        ref : 'Category',
         required : true
     },
     pages : {
-        type : String,
+        type : Number,
         required : true,
+        default: 0
     },
     view : {
         type : Number,
@@ -59,7 +60,7 @@ var BookSchema = new Schema({
     },
     publish_duration :{
         type : Number,
-        default : 30            //in days
+        default : 30            
     },
     publisher :{
         type: Schema.ObjectId,

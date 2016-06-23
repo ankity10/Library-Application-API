@@ -30,7 +30,7 @@ apiRouter.use(passport.initialize());
 require('./config/passport')(passport);
 
 // User model to manipulate data in mongodb
-var User = require('./models/model');
+var User = require('./models/user_model');
 
 // User model to manipulate data in mongodb
 var Book = require('./models/books_model');
@@ -50,6 +50,22 @@ var async = require('async');
 
 // lodash - utility functions
 const utility = require('lodash');
+
+// multer for fileUpload
+var multer = require('multer');
+
+// storage for multer
+var storage = multer.diskStorage({
+    destination: function (req, file, callback) {
+        callback(null, './uploads');
+    },
+    filename: function (req, file, callback) {
+        callback(null, file.originalname + '-' + Date.now());
+    }
+});
+// for use in multer
+var upload = multer({ storage : storage}).single('file');
+
 
 /**
  * @param  {String}
@@ -360,31 +376,6 @@ apiRouter.post('/usercheck',function(req,res){
 
 
 
- 
-// ===== protection middleware starts ========
-// apiRouter.use(function(req, res, next){
-
-
-//     passport.authenticate('jwt', function (err, user, info) {
-//         if (err) { return next(err); }
-//         if (!user) { return res.json({
-//             success:false,
-//             message:"user not authenticated"
-//         }) }
-
-//         req.logIn(user, { session: false }, function (err) {
-
-//           // Should not cause any errors
-
-//           if (err) { return next(err); }
-
-//           console.log(req.user);
-//           next();
-//         });
-//       })(req, res, next);
-
-// });
-// ===== protection middleware ends ==========
 
 // ===== user verification middleware starts ======
 // apiRouter.use(function(req, res, next){
@@ -760,3 +751,25 @@ apiRouter.param('bookId', find_book);
 // ============================== books routes ends =======================================
 
 
+
+// ============================== upload_test routes starts =======================================
+
+apiRouter.post('/upload', function(req, res) {
+
+    // console.log(req);
+    console.log(req.body);
+    console.log(req.file);
+
+    upload(req, res, function(err) {
+        if(err) {
+            return res.status(500).json({
+                error:'Error uploading file'
+            })
+        }
+        res.json({
+            success:true,
+            message:'File uploaded successfully'
+        });
+    })
+})
+// ============================== upload_test routes ends =======================================
