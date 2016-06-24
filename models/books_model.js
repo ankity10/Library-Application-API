@@ -31,6 +31,15 @@ var escapeProperty = function(value) {
  * Book Schema
  */
 
+/**
+ *     categories : {
+        type : [Schema.ObjectId],
+        ref : 'Category',
+        required : true
+    },
+  */
+
+
 
 var BookSchema = new Schema({
     
@@ -41,8 +50,11 @@ var BookSchema = new Schema({
        maxlength : [100, "Name should be less 100 characters"]
    }, 
     categories : {
-        type : [Schema.ObjectId],
-        ref : 'Category',
+        type : [String],
+        required : true
+    },
+    tags: {
+        type : [String],
         required : true
     },
     pages : {

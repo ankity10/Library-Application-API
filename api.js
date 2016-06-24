@@ -675,7 +675,30 @@ apiRouter.route('/books')
 
     .get(function (req, res) {
 
-        Book.find({},function (err, books) {
+        //console.log(req.query.search);
+        //console.log(req.query.categories);
+        var query = {};
+
+        if(req.query.search && req.query.categories){
+
+            query['$and'] = [{'tags':{$regex: req.query.search}},{'categories':req.query.categories}];
+
+        }else if(req.query.search){
+
+            query['tags'] = {$regex: req.query.search};
+
+        }else if (!req.query.search && !req.query.categories){
+
+            query = {};
+
+        }else{
+
+            return res.status(400).json({
+                error:"'search' parameter is missing"
+            });
+        }
+
+        Book.find(query,function (err, books) {
 
             if(err){
                 res.status(500).json({
@@ -686,17 +709,29 @@ apiRouter.route('/books')
             res.json(books);
         })
 
+
     })
     
     .post(passport.authenticate('jwt', {session:false}),function (req, res) {
 
         var book = new Book(req.body);
+
+        // setting fields manually
         book.publisher = req.user;
-        
+        var categories = req.body.categories.split(',');
+        //console.log(categories);
+        book.categories = categories;
+        var tags = categories.concat(book.name);
+        book.tags = tags;
+        console.log(book.tags);
+
+
+
         book.save(function (err) {
             if(err){
                 return res.status(500).json({
-                    error: 'cannot save the book'
+                    error: 'cannot save the book',
+                    log:err
                 })
             }
 
