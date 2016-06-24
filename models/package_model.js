@@ -31,11 +31,6 @@ var mongoose  = require('mongoose'),
 
 var PackageSchema = new Schema({
     
-    userid : {
-        type : Schema.ObjectId,
-        reqiured : true,
-        ref : 'User'
-    },
     name : {                       
         type : String,
         reqiured: true,
