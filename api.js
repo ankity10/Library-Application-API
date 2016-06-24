@@ -32,8 +32,16 @@ require('./config/passport')(passport);
 // User model to manipulate data in mongodb
 var User = require('./models/user_model');
 
-// User model to manipulate data in mongodb
+// Book model to manipulate data in mongodb
 var Book = require('./models/books_model');
+
+// Package model to manipulate user subscription in mongodb
+var Package = require('./models/package_model');
+
+
+// Category model to manipulate book categories in mongodb
+var Category = require('./models/category_model');
+
 
 // crypto module to generate verification token
 var crypto = require('crypto');
@@ -740,7 +748,7 @@ apiRouter.route('/books')
         })
 
 
-    });
+    })
 
 
 apiRouter.route('/books/:bookId')
@@ -787,7 +795,7 @@ apiRouter.param('bookId', find_book);
 
 
 
-// ============================== upload_test routes starts =======================================
+// ============================== upload routes starts =======================================
 
 apiRouter.post('/upload', function(req, res) {
 
@@ -807,4 +815,106 @@ apiRouter.post('/upload', function(req, res) {
         });
     })
 })
-// ============================== upload_test routes ends =======================================
+// ============================== upload routes ends =======================================
+
+// ============================== package routes start =======================================
+
+//check if admin user
+var hasAdmin = function (req, res, next) {
+    if(!req.user.isAdmin){
+        return res.status(401).send('User is not authorized');
+    }
+    next();
+};
+
+
+//returns users registration id
+var user_id = function (req, res, next) {
+
+    User.findOne({_id:req.user.id}, function (req,user) {
+
+        if(err) {
+            return next(err);
+        }
+        if(!user) {
+            return next(new Error('Failed to load User Info '+ id));
+        }
+        req.user = user;
+    });
+
+    next();
+};
+
+
+//route for subscription details
+apiRouter.route('/user/subscription')
+
+    .post(passport.authenticate('jwt', {session :false}),function (req,res) {
+
+        Package.find({},function (err, packages) {
+            if(err){
+                res.status(500).json({
+                    error: 'Cannot list Subscription Package'
+                })
+            }
+            res.json(packages);
+        })
+    })
+
+
+//only admin routes.. to edit,delete,update packages
+
+apiRouter.route('/admin/subscription')
+
+    .post(passport.authenticate('jwt', {session:false}),hasAdmin,function (req, res) {
+
+        var packages = new Package(req.body);
+        packages.name = req.body.name;
+        packages.book_limit = req.body.book_limit;
+        packages.save(function (err) {
+            if(err){
+                return res.status(500).json({
+                    error: 'cannot save new package'
+                })
+            }
+            res.json(packages);
+
+        })
+    })
+
+    .put(passport.authenticate('jwt', {session:false}),hasAdmin, function (req, res) {
+        var packages = req.packages;
+
+        packages = utility.extend(packages, req.body);
+
+        packages.save(function (err) {
+            if(err) {
+                return res.status(500).json({
+                    error: 'Cannot update the package'
+                })
+            }
+
+            return res.json(packages);
+        })
+    })
+
+    .delete(passport.authenticate('jwt', {session:false}),hasAdmin, function (req, res) {
+
+        var packages = req.packages;
+
+        packages.remove(function (err) {
+            if(err){
+                return res.status(500).json({
+                    error:'Cannot delete the package'
+                })
+            }
+
+            res.json(packages);
+        })
+    })
+
+apiRouter.param('userId', user_id);
+
+
+
+// ============================== package routes ends =======================================
