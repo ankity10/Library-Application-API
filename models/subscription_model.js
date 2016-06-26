@@ -29,7 +29,7 @@ var mongoose  = require('mongoose'),
 //
 //
 
-var PackageSchema = new Schema({
+var SubscriptionSchema = new Schema({
     
     name : {                       
         type : String,
@@ -43,4 +43,4 @@ var PackageSchema = new Schema({
     }
 });
 
-module.exports = mongoose.model('Package', PackageSchema);
+module.exports = mongoose.model('Subscription', SubscriptionSchema);

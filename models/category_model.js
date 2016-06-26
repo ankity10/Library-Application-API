@@ -32,7 +32,8 @@ var CategorySchema = new Schema({
 
     name : {                        
         type : String,
-        default : 'test'
+        default : 'test',
+        required : true
     }
 });
 

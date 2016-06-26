@@ -36,7 +36,7 @@ var User = require('./models/user_model');
 var Book = require('./models/books_model');
 
 // Package model to manipulate user subscription in mongodb
-var Package = require('./models/package_model');
+var Subscription = require('./models/subscription_model');
 
 
 // Category model to manipulate book categories in mongodb
@@ -759,6 +759,7 @@ apiRouter.route('/books/:bookId')
     })
 
     .put(passport.authenticate('jwt', {session:false}),hasAuthorization, function (req, res) {
+
         var book = req.book;
         
         book = utility.extend(book, req.body);
@@ -795,6 +796,8 @@ apiRouter.param('bookId', find_book);
 
 
 
+
+
 // ============================== upload routes starts =======================================
 
 apiRouter.post('/upload', function(req, res) {
@@ -817,7 +820,11 @@ apiRouter.post('/upload', function(req, res) {
 })
 // ============================== upload routes ends =======================================
 
-// ============================== package routes start =======================================
+
+
+
+
+// ============================== Subscription routes start =======================================
 
 //check if admin user
 var hasAdmin = function (req, res, next) {
@@ -828,93 +835,189 @@ var hasAdmin = function (req, res, next) {
 };
 
 
-//returns users registration id
-var user_id = function (req, res, next) {
+// returns users registration id
+var find_subscription = function (req, res, next, id) {
 
-    User.findOne({_id:req.user.id}, function (req,user) {
+    Subscription.findOne({_id:id}, function (err,subscription) {
 
         if(err) {
             return next(err);
         }
-        if(!user) {
-            return next(new Error('Failed to load User Info '+ id));
+        if(!subscription) {
+            return next(new Error('Failed to load Subscription Info'));
         }
-        req.user = user;
+        req.subscription = subscription;
     });
 
     next();
 };
 
 
-//route for subscription details
+//route for subscription details/list
 apiRouter.route('/user/subscription')
 
     .post(passport.authenticate('jwt', {session :false}),function (req,res) {
 
-        Package.find({},function (err, packages) {
+        Subscription.find({},function (err, subscriptions) {
             if(err){
                 res.status(500).json({
                     error: 'Cannot list Subscription Package'
                 })
             }
-            res.json(packages);
+            res.json(subscriptions);
         })
     })
 
 
-//only admin routes.. to edit,delete,update packages
+//only admin routes.. to add subscription
 
 apiRouter.route('/admin/subscription')
 
     .post(passport.authenticate('jwt', {session:false}),hasAdmin,function (req, res) {
 
-        var packages = new Package(req.body);
-        packages.name = req.body.name;
-        packages.book_limit = req.body.book_limit;
-        packages.save(function (err) {
+        var subscriptions = new Subscription(req.body);
+        subscriptions.name = req.body.name;
+        subscriptions.book_limit = req.body.book_limit;
+        subscriptions.save(function (err) {
             if(err){
                 return res.status(500).json({
-                    error: 'cannot save new package'
+                    error: 'Cannot save new Subscription package'
                 })
             }
-            res.json(packages);
+            res.json(subscriptions);
 
         })
     })
 
+
+//only admin routes.. to delete,update packages
+apiRouter.route('/admin/subscriptions/:subscriptionID')
+
     .put(passport.authenticate('jwt', {session:false}),hasAdmin, function (req, res) {
-        var packages = req.packages;
 
-        packages = utility.extend(packages, req.body);
+        var subscription = req.subscription;
 
-        packages.save(function (err) {
+        subscription = utility.extend(subscription, req.body);
+
+        subscription.save(function (err) {
             if(err) {
                 return res.status(500).json({
-                    error: 'Cannot update the package'
+                    error: 'Cannot update the Subscription package'
                 })
             }
-
-            return res.json(packages);
+            return res.json(subscription);
         })
     })
 
     .delete(passport.authenticate('jwt', {session:false}),hasAdmin, function (req, res) {
 
-        var packages = req.packages;
+        var subscription = req.subscription;
 
-        packages.remove(function (err) {
+        subscription.remove(function (err) {
             if(err){
                 return res.status(500).json({
-                    error:'Cannot delete the package'
+                    error:'Cannot delete the Subscription'
                 })
             }
-
-            res.json(packages);
+            res.json(subscription);
         })
     })
 
-apiRouter.param('userId', user_id);
+apiRouter.param('subscriptionID', find_subscription);
 
 
 
-// ============================== package routes ends =======================================
+// ============================== Subscription routes ends =======================================
+
+
+// ============================== Book_Category routes start =======================================
+var find_categories = function (req, res, next, id) {
+
+    Category.findOne({_id:id}, function (err,categories) {
+
+        if(err) {
+            return next(err);
+        }
+        if(!categories) {
+            return next(new Error('Failed to load Categories Info '));
+        }
+        req.categories = categories;
+    });
+
+    next();
+};
+
+//to list the avaliable categories
+apiRouter.route('/user/categories')
+
+    .post(passport.authenticate('jwt', {session :false}),function (req,res) {
+
+        Category.find({},function (err, subscriptions) {
+            if(err){
+                res.status(500).json({
+                    error: 'Cannot list Categories'
+                })
+            }
+            res.json(subscriptions);
+        })
+    })
+
+//to add new categories only by admin
+apiRouter.route('/admin/categories')
+
+    .post(passport.authenticate('jwt', {session:false}),hasAdmin,function (req, res) {
+
+        var categories = new Category(req.body);
+        categories.name = req.body.name;
+        categories.save(function (err) {
+            if(err){
+                return res.status(500).json({
+                    error: 'Cannot save new Category'
+                })
+            }
+            res.json(categories);
+
+        })
+    })
+
+//only admin routes.. to delete,update categories
+apiRouter.route('/admin/categories/:categoriesID')
+
+    .put(passport.authenticate('jwt', {session:false}),hasAdmin, function (req, res) {
+
+        var categories = req.categories;
+
+        categories = utility.extend(categories, req.body);
+
+        categories.save(function (err) {
+            if(err) {
+                return res.status(500).json({
+                    error: 'Cannot update the Categories'
+                })
+            }
+
+            return res.json(categories);
+        })
+    })
+
+    .delete(passport.authenticate('jwt', {session:false}),hasAdmin, function (req, res) {
+
+        var categories = req.categories;
+
+        categories.remove(function (err) {
+            if(err){
+                return res.status(500).json({
+                    error:'Cannot delete the Category'
+                })
+            }
+            res.json(categories);
+        })
+    })
+
+apiRouter.param('categoriesID', find_categories);
+
+
+
+
+
+// ============================== Book_Category routes ends =======================================
