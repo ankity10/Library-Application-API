@@ -135,10 +135,16 @@ apiRouter.post("/register",function(req, res){
         });
 
         // if no error then return json object with success message
-        res.json({
-            "success" : true,
-            "message" : "User created successfully. Great job!"
+        var jwtuser = user._id;
+        // console.log("user id : "+jwtuser);
+        var token = jwt.sign(jwtuser, config.secret, {
+        expiresIn: 100080 // one week
         });
+        res.json({
+            success: true,
+            token: "JWT "+token
+        });
+        
     });
 });
 
@@ -164,7 +170,7 @@ apiRouter.post("/login",function( req, res ){
                 success:false,
                 message: "Authentication failed. User not found. "
             });
-            console.log(datetime);
+            // console.log(datetime);
 
         }
         // if a user found with that username
@@ -380,6 +386,21 @@ apiRouter.post('/usercheck',function(req,res){
     }
     });
 
+
+// This toute will be used by angular to check if a user is logged in
+apiRouter.get('/me', passport.authenticate('jwt', {session:false}), function (req, res) {
+    if(req.isAuthenticated()){
+        res.json({
+            success:true,
+            user:req.user
+        })
+    } else {
+        res.json({
+            success:false,
+            user:null
+        })
+    }
+})
 //================== unprotected routes ends =======================
 
 
@@ -1021,3 +1042,5 @@ apiRouter.param('categoriesID', find_categories);
 
 
 // ============================== Book_Category routes ends =======================================
+
+
