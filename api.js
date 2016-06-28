@@ -107,14 +107,14 @@ var emailToken = function(email, username, token, route, callback){
 
 
 
-//================== unprotected routes starts =======================
+//================== user routes starts =======================
 /**
  * ['/register' api route, for registration of user]
  * @param  {[request object]} req                    [By default provided by express application]
  * @param  {[response object]} res                   [By default provided by express application]
  * @return {[json]}                                  [Returns a json object]
  */
-apiRouter.post("/register",function(req, res){
+apiRouter.post("/user/auth/signup",function(req, res){
     var user = new User(req.body);
     user.provider = 'local';                           // user is registered by our signup form
     user.verificationToken = base64url(crypto.randomBytes(200));
@@ -154,7 +154,7 @@ apiRouter.post("/register",function(req, res){
  * @param  {[response object]} res                   [By default provided by express application]
  * @return {[Json]}                                  [Return a json object with keys "success" and "messaage"]
  */
-apiRouter.post("/login",function( req, res ){
+apiRouter.post("/user/auth/login",function( req, res ){
     var username = req.body.username;
     var password = req.body.password;
     // finding one user with username = 'username' or email = 'username' by using mongodb $or query
@@ -213,19 +213,23 @@ apiRouter.post("/login",function( req, res ){
 
     });
 });
-/**
- * [Unprotected testing route, can be accessed without authenticating]
- * @param  {[request object]} req                    [By default provided by express application]
- * @param  {[response object]} res                   [By default provided by express application]
- * @return {[Json]}          [Returns a json object]
- */
-apiRouter.get("/test",function(req, res){
-    res.json({
-        "message" : "This is a testing route ==> "+ req.user.id
-    })
-});
 
-apiRouter.route('/resetpassword')
+// This toute will be used by angular to check if a user is logged in
+apiRouter.get('/user/me', passport.authenticate('jwt', {session:false}), function (req, res) {
+    if(req.isAuthenticated()){
+        res.json({
+            success:true,
+            user:req.user
+        })
+    } else {
+        res.json({
+            success:false,
+            user:null
+        })
+    }
+})
+
+apiRouter.route('/user/resetpassword')
     // generate a reset token and send an email
     .post(function(req, res){
 
@@ -337,125 +341,7 @@ apiRouter.route('/resetpassword')
                     })
                 }
         });
-
     });
-
-
-//Checks for username available or not while signup
-apiRouter.post('/usercheck',function(req,res){
-
-    if(req.body.username){
-    User.findOne({
-                    $or: [{
-                            email: req.body.username
-                        }, {
-                            username: req.body.username
-                        }]},function(err,user){
-                    // if there is any error
-                    if(err){
-                        res.json({
-                            success: false,
-                            message: "Error while finding username!!"
-                        });
-                    }
-                    // if no user found with that token
-                    if(user){
-                        res.json({
-                            success: false,
-                            message: "Username Already exists!!"
-                        });
-                    }
-                    // if user found then set verified and reset the token
-                    else
-                    {
-                            res.json({
-                                success: true,
-                                message: "Username is available"
-                            });
-
-                    }
-
-         });
-    }
-    else
-    {
-        res.json({
-                success : false,
-                message : "Field is empty!"
-        });
-    }
-    });
-
-
-// This toute will be used by angular to check if a user is logged in
-apiRouter.get('/me', passport.authenticate('jwt', {session:false}), function (req, res) {
-    if(req.isAuthenticated()){
-        res.json({
-            success:true,
-            user:req.user
-        })
-    } else {
-        res.json({
-            success:false,
-            user:null
-        })
-    }
-})
-//================== unprotected routes ends =======================
-
-
-
-
-// ===== user verification middleware starts ======
-// apiRouter.use(function(req, res, next){
-
-//     User.findOne({_id: req.user._id}, function(err, user){
-//         if(err){
-//             return res.jsonwebtoken({
-//                 success:false,
-//                 message:err
-//             });
-//         }
-//         if(!user){
-//             return res.json({
-//                 success:false,
-//                 message:"user not found"
-//             })
-//         }
-//         else{
-
-//             console.log(user);
-
-//             if(user.verified)
-//             {
-//                 console.log("User verified");
-//                 next();
-//             }
-//             else
-//             {
-//                 res.json({
-//                     success:false,
-//                     message: "user not verified"
-//                 })
-//             }
-//         }
-//     })
-// });
-// ===== user verification middleware ends ======
-
-
-
-
-
-//========================== protected routes starts ==================================
-
-// Protect dash route with JWT
-apiRouter.get('/dash', passport.authenticate('jwt', { session: false }), function(req, res) {
-    // res.render('/index.html');
-  console.log('It worked! User id is: ' + req.user + '.');
-  res.send("hi!");
-  
-});
 
 /**
  * [Unprotected verification route, used for email verification]
@@ -463,7 +349,7 @@ apiRouter.get('/dash', passport.authenticate('jwt', { session: false }), functio
  * @param  {[response object]} res                   [By default provided by express application]
  * @return {[Json]}
  */
-apiRouter.get('/userverify',function(req, res){
+apiRouter.get('/user/verify',function(req, res){
 
     // find one user with queried username and token
     User.findOne({
@@ -510,8 +396,53 @@ apiRouter.get('/userverify',function(req, res){
     })
 });
 
+//Checks for username available or not while signup
+apiRouter.post('/user/availability',function(req,res){
+
+    if(req.body.username){
+    User.findOne({
+                    $or: [{
+                            email: req.body.email
+                        }, {
+                            username: req.body.username
+                        }]},function(err,user){
+                    // if there is any error
+                    if(err){
+                        res.json({
+                            success: false,
+                            message: "Error while finding username!!"
+                        });
+                    }
+                    // if no user found with that token
+                    if(user){
+                        res.json({
+                            success: false,
+                            message: "Username Already exists!!"
+                        });
+                    }
+                    // if user found then set verified and reset the token
+                    else
+                    {
+                            res.json({
+                                success: true,
+                                message: "Username is available"
+                            });
+
+                    }
+
+         });
+    }
+    else
+    {
+        res.json({
+                success : false,
+                message : "Field is empty!"
+        });
+    }
+});
+
 //Update username only
-apiRouter.put('/user/id/edit/username', passport.authenticate('jwt', { session: false }), function(req, res) {
+apiRouter.put('/user/edit/username', passport.authenticate('jwt', { session: false }), function(req, res) {
 
         User.findOne({_id:req.user._id},function(err,user){               // if there is any error
                 if(err){
@@ -589,9 +520,9 @@ apiRouter.put('/user/id/edit/username', passport.authenticate('jwt', { session: 
                         }
                 }
         });
-    });    
+});    
 
-apiRouter.put('/user/id/edit',passport.authenticate('jwt',{session : false}), function(req,res){
+apiRouter.put('/user/edit',passport.authenticate('jwt',{session : false}), function(req,res){
 
     User.findOne({_id:req.user._id},function(err,user){               // if there is any error
                         if(err){
@@ -649,28 +580,31 @@ apiRouter.put('/user/id/edit',passport.authenticate('jwt',{session : false}), fu
                 });
 });
 
-// '/users/me' route for angular to check whether the user is signed in or not
-apiRouter.get('/users/me',passport.authenticate('jwt', {session: false}), function(req, res){
 
-});
+// ================== upload routes starts ==================
+apiRouter.post('/upload', function(req, res) {
 
+    // console.log(req);
+    console.log(req.body);
+    console.log(req.file);
 
-// only publisher route to publish the book
-
-apiRouter.post('/user/publish',passport.authenticate('jwt', {session: false}), function (req, res) {
-
-
-    // console.log(req.user);
-    res.json({
-        'username' : req.user._id
+    upload(req, res, function(err) {
+        if(err) {
+            return res.status(500).json({
+                error:'Error uploading file'
+            })
+        }
+        res.json({
+            success:true,
+            message:'File uploaded successfully'
+        });
     })
-});
+})
+// ================= upload routes ends ======================
 
 
 
-//========================== protected routes ends ==================================
-
-
+//=================================== user routes ends =======================================
 
 
 // ============================== books routes start =======================================
@@ -683,7 +617,6 @@ var hasAuthorization = function (req, res, next) {
 
     next();
 };
-
 
 var find_book = function (req, res, next, id) {
 
@@ -698,7 +631,6 @@ var find_book = function (req, res, next, id) {
         next();
     })
 };
-
 
 apiRouter.route('/books')
 
@@ -771,7 +703,6 @@ apiRouter.route('/books')
 
     })
 
-
 apiRouter.route('/books/:bookId')
 
     .get(function (req, res) {
@@ -817,44 +748,15 @@ apiRouter.param('bookId', find_book);
 
 
 
-
-
-// ============================== upload routes starts =======================================
-
-apiRouter.post('/upload', function(req, res) {
-
-    // console.log(req);
-    console.log(req.body);
-    console.log(req.file);
-
-    upload(req, res, function(err) {
-        if(err) {
-            return res.status(500).json({
-                error:'Error uploading file'
-            })
-        }
-        res.json({
-            success:true,
-            message:'File uploaded successfully'
-        });
-    })
-})
-// ============================== upload routes ends =======================================
-
-
-
-
-
 // ============================== Subscription routes start =======================================
 
 //check if admin user
-var hasAdmin = function (req, res, next) {
+var isAdmin = function (req, res, next) {
     if(!req.user.isAdmin){
         return res.status(401).send('User is not authorized');
     }
     next();
 };
-
 
 // returns users registration id
 var find_subscription = function (req, res, next, id) {
@@ -873,7 +775,6 @@ var find_subscription = function (req, res, next, id) {
     next();
 };
 
-
 //route for subscription details/list
 apiRouter.route('/user/subscription')
 
@@ -889,12 +790,10 @@ apiRouter.route('/user/subscription')
         })
     })
 
-
 //only admin routes.. to add subscription
-
 apiRouter.route('/admin/subscription')
 
-    .post(passport.authenticate('jwt', {session:false}),hasAdmin,function (req, res) {
+    .post(passport.authenticate('jwt', {session:false}), isAdmin, function (req, res) {
 
         var subscriptions = new Subscription(req.body);
         subscriptions.name = req.body.name;
@@ -910,11 +809,10 @@ apiRouter.route('/admin/subscription')
         })
     })
 
-
 //only admin routes.. to delete,update packages
 apiRouter.route('/admin/subscriptions/:subscriptionID')
 
-    .put(passport.authenticate('jwt', {session:false}),hasAdmin, function (req, res) {
+    .put(passport.authenticate('jwt', {session:false}), isAdmin, function (req, res) {
 
         var subscription = req.subscription;
 
@@ -930,7 +828,7 @@ apiRouter.route('/admin/subscriptions/:subscriptionID')
         })
     })
 
-    .delete(passport.authenticate('jwt', {session:false}),hasAdmin, function (req, res) {
+    .delete(passport.authenticate('jwt', {session:false}), isAdmin, function (req, res) {
 
         var subscription = req.subscription;
 
@@ -945,8 +843,6 @@ apiRouter.route('/admin/subscriptions/:subscriptionID')
     })
 
 apiRouter.param('subscriptionID', find_subscription);
-
-
 
 // ============================== Subscription routes ends =======================================
 
@@ -1036,10 +932,6 @@ apiRouter.route('/admin/categories/:categoriesID')
     })
 
 apiRouter.param('categoriesID', find_categories);
-
-
-
-
 
 // ============================== Book_Category routes ends =======================================
 
