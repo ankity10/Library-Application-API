@@ -104,10 +104,50 @@ var emailToken = function(email, username, token, route, callback){
 };
 
 
-
-
-
 //================== user routes starts =======================
+
+var user_availability = function(req) {
+
+        if(req.body.username && req.body.email){
+            User.findOne({
+                        $or: [{
+                                email: req.body.email
+                            }, {
+                                username: req.body.username
+                            }]},function(err,user){
+                        // if there is any error
+                        if(err){
+                            return {
+                                success: false,
+                                message: "Error while finding username!!"
+                            };
+                        }
+                        // if user found then success false
+                        if(user){
+                            return {
+                                success: false,
+                                message: "Username Already exists!!"
+                            };
+                        }
+                        // else username or email is available
+                        else
+                        {
+                                return {
+                                    success: true,
+                                    message: "Username is available"
+                                };
+
+                        }
+            });
+            
+        } else {
+            return {
+                    success : false,
+                    message : "Field is empty!"
+            };
+        }
+}
+
 /**
  * ['/register' api route, for registration of user]
  * @param  {[request object]} req                    [By default provided by express application]
@@ -135,7 +175,7 @@ apiRouter.post("/user/auth/signup",function(req, res){
         });
 
         // if no error then return json object with success message
-        var jwtuser = user._id;
+        var jwtuser = user.toJSON();
         // console.log("user id : "+jwtuser);
         var token = jwt.sign(jwtuser, config.secret, {
         expiresIn: 100080 // one week
@@ -171,7 +211,6 @@ apiRouter.post("/user/auth/login",function( req, res ){
                 message: "Authentication failed. User not found. "
             });
             // console.log(datetime);
-
         }
         // if a user found with that username
         else
@@ -179,9 +218,7 @@ apiRouter.post("/user/auth/login",function( req, res ){
             // if password matches
             if(user.authenticate(password))
             {
-                // if user is verified
-                // if(user.verified){
-                    var jwtuser = user._id;
+                    var jwtuser = user.toJSON();
                     // console.log("user id : "+jwtuser);
                     var token = jwt.sign(jwtuser, config.secret, {
                     expiresIn: 100080 // one week
@@ -190,15 +227,6 @@ apiRouter.post("/user/auth/login",function( req, res ){
                         success: true,
                         token: "JWT "+token
                     });
-                // }
-                // if user is not verified
-                // else
-                // {
-                //     res.json({
-                //         success:false,
-                //         message: "Authentication failed. User not verified"
-                //     })
-                // }
                
             }
             // if password does not matches
@@ -213,21 +241,6 @@ apiRouter.post("/user/auth/login",function( req, res ){
 
     });
 });
-
-// This toute will be used by angular to check if a user is logged in
-apiRouter.get('/user/me', passport.authenticate('jwt', {session:false}), function (req, res) {
-    if(req.isAuthenticated()){
-        res.json({
-            success:true,
-            user:req.user
-        })
-    } else {
-        res.json({
-            success:false,
-            user:null
-        })
-    }
-})
 
 apiRouter.route('/user/resetpassword')
     // generate a reset token and send an email
@@ -396,190 +409,90 @@ apiRouter.get('/user/verify',function(req, res){
     })
 });
 
+// apiRouter.post('/user/password/verify', passport.authenticate('jwt', {session: false}, function(req, res) {
+    
+//     var user = req.user;
+//     var oldPassword = req.body.oldpassword;
+
+//     if(user.authenticate(oldPassword)) {
+//         res.json({
+//             success: true,
+//             message: "Password verified successfully"
+//         });
+//     } else {
+//         res.json({
+//             success: false,
+//             message: "Password verification failed: Incorrect password"
+//         });
+//     }
+// }))
+
+apiRouter.post('/user/password/change', function(req, res) {
+    var newPassword = req.body.newPassword;
+    var user = req.user;
+
+    user.password = newPassword;
+        user.save(function(error) {
+            if(error) {
+                res.status(500)json({
+                    success: false,
+                    message: "Cannot update password"
+                })
+            }
+            res.json({
+                success: true,
+                message: "User password updated successfully"
+            });
+        })
+    })
 //Checks for username available or not while signup
 apiRouter.post('/user/availability',function(req,res){
-
-    if(req.body.username){
-    User.findOne({
-                    $or: [{
-                            email: req.body.email
-                        }, {
-                            username: req.body.username
-                        }]},function(err,user){
-                    // if there is any error
-                    if(err){
-                        res.json({
-                            success: false,
-                            message: "Error while finding username!!"
-                        });
-                    }
-                    // if no user found with that token
-                    if(user){
-                        res.json({
-                            success: false,
-                            message: "Username Already exists!!"
-                        });
-                    }
-                    // if user found then set verified and reset the token
-                    else
-                    {
-                            res.json({
-                                success: true,
-                                message: "Username is available"
-                            });
-
-                    }
-
-         });
-    }
-    else
-    {
-        res.json({
-                success : false,
-                message : "Field is empty!"
-        });
-    }
+    res.json(user_availability(req));
 });
 
-//Update username only
-apiRouter.put('/user/edit/username', passport.authenticate('jwt', { session: false }), function(req, res) {
+apiRouter.route('/user/me',passport.authenticate('jwt', {session:false}))
+    // This route will be used by angular to check if a user is logged in
+    .get(function (req, res) {
+        if(req.isAuthenticated()){
+            res.json({
+                success:true,
+                user:req.user.toJSON()
+            })
+        } else {
+            res.json({
+                success:false,
+                user:null
+            })
+        }
+    })
+    // This will update user details
+    .put(function(req,res){
 
-        User.findOne({_id:req.user._id},function(err,user){               // if there is any error
-                if(err){
-                    res.json({
-                        success: false,
-                        message: "Error occur"
-                    });
+        if(user_availability(req).success) {
+
+            var user = req.user;
+            var newUser = utility.extend(user, req.body);
+
+            newUser.save(function(error) {
+                if(error) {
+                    res.status(500).json({
+                        success:false,
+                        message:"Cannot update user data"
+                    })
                 }
-                if(!user){
-                    res.json({
-                        success: false,
-                        message: "Username not found! User not Exists or Authentication failed."
-                    });
-                }
-                else{
-                        // console.log(req.body.username.length);
-                        //User find successful and updating the updated fields
-                        if(req.body.username.length)
-                        {
+                res.json({
+                    success:true,
+                    data: newUser
+                })
+            }) 
+        } else {
+            res.json({
+                success:false,
+                message:"Username or Email already registered"
+            })
+        }
 
-                            // console.log("Inside if");
-                            User.findOne({username:req.body.username},function(err,user){
-                                if(err){
-                                    res.json({
-                                        success: false,
-                                        message: "Error occur"
-                                    });
-                                    return;
-                                }
-                                if(user){
-                                    res.json({
-                                        success: false,
-                                        message: "Username already exists"
-                                    });
-                                    return;
-                                }
-                                else{
-
-                                    //if Updating Username
-                                    User.update({_id:req.user._id},
-                                        {
-                                            $set: { username: req.body.username}
-                                        }, function(err, results) {
-
-                                                if(err)
-                                                {
-                                                    res.json({
-                                                        success: false,
-                                                        message: "Error in Updating username"
-                                                    });
-                                                    return;
-                                                }
-
-                                                if(results)
-                                                {
-                                                    console.log("inside last else");
-                                                    res.json({
-                                                        success: true,
-                                                        message: "Updating username Successful"
-                                                    });
-                                                    return;
-                                                }
-                                                else
-                                                {
-                                                    res.json({
-                                                        success: false,
-                                                        message: "Username not update"
-                                                    });
-                                                    return;
-                                                }
-                                       });
-                                    }
-                                   
-                            });
-                        }
-                }
-        });
-});    
-
-apiRouter.put('/user/edit',passport.authenticate('jwt',{session : false}), function(req,res){
-
-    User.findOne({_id:req.user._id},function(err,user){               // if there is any error
-                        if(err){
-                            res.json({
-                                success: false,
-                                message: "Error occur"
-                            });
-                        }
-                        if(!user){
-                            res.json({
-                                success: false,
-                                message: "Username not found! User not Exists or Authentication failed."
-                            });
-                        }
-                        else{
-                                User.update({_id:req.user._id},
-                                        {
-                                            $set:   { 
-                                                        name: req.body.name,
-                                                        mobile: req.body.mobile,
-                                                        country: req.body.country
-                                                    }
-
-                                        }, function(err, results) {
-
-                                                if(err)
-                                                {
-                                                    res.json({
-                                                        success: false,
-                                                        message: "Error in Updating"
-                                                    });
-                                                    return;
-                                                }
-
-                                                if(results)
-                                                {
-                                                    res.json({
-                                                        success: true,
-                                                        message: "Updating Successful"
-                                                    });
-                                                    return;
-                                                }
-                                                else
-                                                {
-                                                    res.json({
-                                                        success: false,
-                                                        message: "Profile not updated"
-                                                    });
-                                                    return;
-                                                }
-
-                                        });
-                            }
-
-                });
-});
-
+    });
 
 // ================== upload routes starts ==================
 apiRouter.post('/upload', function(req, res) {
@@ -601,10 +514,8 @@ apiRouter.post('/upload', function(req, res) {
     })
 })
 // ================= upload routes ends ======================
-
-
-
 //=================================== user routes ends =======================================
+
 
 
 // ============================== books routes start =======================================
@@ -669,8 +580,6 @@ apiRouter.route('/books')
 
             res.json(books);
         })
-
-
     })
     
     .post(passport.authenticate('jwt', {session:false}),function (req, res) {
@@ -691,27 +600,24 @@ apiRouter.route('/books')
         book.save(function (err) {
             if(err){
                 return res.status(500).json({
-                    error: 'cannot save the book',
-                    log:err
+                    message: 'cannot save the book',
+                    log:err,
+                    success: false
                 })
             }
 
             res.json(book);
 
         })
-
-
     })
 
 apiRouter.route('/books/:bookId')
 
     .get(function (req, res) {
-
         return res.json(req.book);
     })
 
     .put(passport.authenticate('jwt', {session:false}),hasAuthorization, function (req, res) {
-
         var book = req.book;
         
         book = utility.extend(book, req.body);
@@ -719,7 +625,8 @@ apiRouter.route('/books/:bookId')
         book.save(function (err) {
             if(err) {
                 return res.status(500).json({
-                    error: 'Cannot update the book'
+                    success:false,
+                    message: 'Cannot update the book'
                 })
             }
 
@@ -730,11 +637,11 @@ apiRouter.route('/books/:bookId')
     .delete(passport.authenticate('jwt', {session:false}),hasAuthorization, function (req, res) {
 
         var book = req.book;
-
         book.remove(function (err) {
             if(err){
                 return res.status(500).json({
-                    error:'Cannot delete the book'
+                    message:'Cannot delete the book',
+                    success:false
                 })
             }
 
@@ -847,6 +754,7 @@ apiRouter.param('subscriptionID', find_subscription);
 // ============================== Subscription routes ends =======================================
 
 
+
 // ============================== Book_Category routes start =======================================
 var find_categories = function (req, res, next, id) {
 
@@ -882,7 +790,7 @@ apiRouter.route('/user/categories')
 //to add new categories only by admin
 apiRouter.route('/admin/categories')
 
-    .post(passport.authenticate('jwt', {session:false}),hasAdmin,function (req, res) {
+    .post(passport.authenticate('jwt', {session:false}),isAdmin,function (req, res) {
 
         var categories = new Category(req.body);
         categories.name = req.body.name;
@@ -900,7 +808,7 @@ apiRouter.route('/admin/categories')
 //only admin routes.. to delete,update categories
 apiRouter.route('/admin/categories/:categoriesID')
 
-    .put(passport.authenticate('jwt', {session:false}),hasAdmin, function (req, res) {
+    .put(passport.authenticate('jwt', {session:false}),isAdmin, function (req, res) {
 
         var categories = req.categories;
 
@@ -917,7 +825,7 @@ apiRouter.route('/admin/categories/:categoriesID')
         })
     })
 
-    .delete(passport.authenticate('jwt', {session:false}),hasAdmin, function (req, res) {
+    .delete(passport.authenticate('jwt', {session:false}),isAdmin, function (req, res) {
 
         var categories = req.categories;
 
