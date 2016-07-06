@@ -434,7 +434,7 @@ apiRouter.post('/user/password/change', function(req, res) {
     user.password = newPassword;
         user.save(function(error) {
             if(error) {
-                res.status(500)json({
+                res.status(500).json({
                     success: false,
                     message: "Cannot update password"
                 })
