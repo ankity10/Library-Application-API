@@ -281,11 +281,11 @@ apiRouter.route('/user/resetpassword')
                             done(null, user);
                             // return;
                         }else{
-                            error = {
+
+                            done({
                                 message:"Email sending failed",
                                 error:err
-                            };
-                            done(error,user);
+                            },user);
                         }
                     })
                 }
